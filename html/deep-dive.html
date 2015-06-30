@@ -39,7 +39,12 @@
             <ul class="nav">
               <li><a data-target="#plugin-define" ng-click="scrollTo('plugin-define')">How to define</a></li>
               <li><a data-target="#plugin-use" ng-click="scrollTo('plugin-use')">How to use</a></li>
-              <li><a data-target="#plugin-provided" ng-click="scrollTo('plugin-provided')">Provided Plugins</a></li>
+              <li>
+                <a data-target="#plugin-provided" ng-click="scrollTo('plugin-provided')">Provided Plugins</a>
+                  <ul class="nav">
+                    <li><a data-target="#plugin-hint" ng-click="scrollTo('plugin-hint')">Hint</a></li>
+                  </ul>
+              </li>
             </ul>
           </li>
         </ul>
@@ -800,6 +805,9 @@ $("#editor").summernote({
         <h3 id="plugin-provided">Provided Plugins</h3>
         <p>Summernote provides some plugins.</p>
         <table class="table table-hover table-striped">
+            <colgroup>
+                <col width="150" />
+            </colgroup>
           <thead>
           <tr>
             <th>Name</th>
@@ -821,8 +829,108 @@ $("#editor").summernote({
             </td>
             <td><a href="/jsduck/#!/api/plugin.video">Link</a></td>
           </tr>
+          <tr>
+              <td>summernote-ext-hint</td>
+              <td>
+                  create customized your hint
+                </td>
+              <td><a href="/jsduck/#!/api/plugin.hint">Link</a></td>
+          </tr>
         </tbody>
       </table>
+
+
+          <h3 id="plugin-hint">Hint</h3>
+
+          <p>You can make a own autocomplete in summernote. Please use the following attributes.</p>
+
+          <table class="table table-bordered">
+              <tr>
+                  <th>Property</th>
+                  <th>Return</th>
+                  <th>Description</th>
+              </tr>
+              <tr>
+                  <td>load</td>
+                  <td></td>
+                  <td>run when plugin is initailized</td>
+              </tr>
+              <tr>
+                  <td>match</td>
+                  <td>RegExp</td>
+                  <td>check trigger string (ex - :(colon) is emoji trigger string) </td>
+              </tr>
+              <tr>
+                  <td>content</td>
+                  <td>DOM or String</td>
+                  <td>make to insert content in summernote</td>
+              </tr>
+              <tr>
+                  <td>template</td>
+                  <td>String</td>
+                  <td> make item template for hint popover</td>
+              </tr>
+              <tr>
+                  <td>search</td>
+                  <td></td>
+                  <td>create a collection for keyword</td>
+              </tr>
+          </table>
+
+          <h5>First, load hint plugin.</h5>
+          <pre><code class="html">&lt;script type="text/javascript" src="../plugin/summernote-ext-hint.js">&lt;/script></code></pre>
+
+          <h5>Second, let's make a github emoji sample.</h5>
+
+          <img src="images/sample/hint-emoji.gif" style="display:block"/>
+
+          <p>Hint plugin is able to define in summernote method.</p>
+          <pre><code class="javascript"> $('.summernote').summernote({
+    plugin : {
+        hint : {
+            loadEmoji : function (data) {
+                this.emoji = Object.keys(data);
+                this.emojiLink = data;
+            },
+
+            // init plugin
+            load : function($popover) {
+                var self = this;
+                $.getJSON('https://api.github.com/emojis', function (data) {
+                   self.loadEmoji(data);
+                });
+            },
+
+            // check trigger string   (  ':'(colon) for emoji )
+            match : /\B:([\-+\w]*)$/,
+
+            // make to insert content in summernote
+            content : function(item) {
+                var url = this.emojiLink[item];
+                if (url) {
+                // dom object or text
+                 return $('&lt;img />').attr('src', url).css({ width : 20 })[0];
+                }
+                return "";
+            },
+
+            // show item for hint popover
+            template : function(item) {
+                var content = this.emojiLink[item];
+                return '&lt;img src="' + content + '" contenteditable="false" width="20" /> :' + item + ':';
+            },
+
+            // create a collection for keyword
+            search : function(keyword, callback) {
+                callback($.grep(this.emoji, function (item) {
+                  return (item.indexOf(keyword)  === 0);
+                }));
+            }
+        }
+    }
+});
+          </code></pre>
+
       <p>You can find this plugins and also contribute with your plugin here: <a href="https://github.com/HackerWins/summernote/tree/develop/plugin" target="_blank">plugin <i class="fa fa-external-link"></i></p>
       </section>
     </div>
